@@ -272,17 +272,16 @@ public class JsonParserClassData extends ProcessorClassData<String, TypeData> {
     for (Map.Entry<String, TypeData> entry : getIterator()) {
       TypeData data = entry.getValue();
 
-      String condition = "\"" + data.getFieldName() + "\".equals(fieldName)";
-
-      for (String alternateFieldName : data.getAlternateFieldNames()) {
-        condition += "|| \"" + alternateFieldName + "\".equals(fieldName)";
-      }
-
       if (firstEntry) {
-        writer.beginControlFlow("if (" + condition + ")");
-      } else {
-        writer.nextControlFlow("else if (" + condition + ")");
+        writer.beginControlFlow("switch (fieldName)");
       }
+
+      StringBuilder caseBuilder = new StringBuilder();
+      caseBuilder.append("case \"").append(data.getFieldName()).append("\":");
+      for (String alternateFieldName : data.getAlternateFieldNames()) {
+        caseBuilder.append("\n      case \"").append(alternateFieldName).append("\":");
+      }
+      writer.beginControlFlow(caseBuilder.toString());
 
       if (data.getCollectionType() != TypeUtils.CollectionType.NOT_A_COLLECTION) {
         generateCollectionParser(messager, writer, data);
@@ -311,6 +310,7 @@ public class JsonParserClassData extends ProcessorClassData<String, TypeData> {
       }
 
       writer.emitStatement("return true");
+      writer.endControlFlow();
 
       firstEntry = false;
     }
