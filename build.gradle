@@ -5,6 +5,7 @@ apply plugin: 'groovy'
 
 subprojects {
   repositories {
+    jcenter()
     mavenCentral()
   }
 }
